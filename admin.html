@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+
+<meta charset="UTF-8">
+
+<title>Mira's Cargo Admin</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:20px;
+}
+
+.box{
+background:white;
+padding:20px;
+border-radius:15px;
+max-width:400px;
+margin:auto;
+}
+
+input,button{
+width:100%;
+padding:12px;
+margin:8px 0;
+box-sizing:border-box;
+}
+
+button{
+background:#111;
+color:white;
+border:0;
+border-radius:8px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="box">
+
+<h2>🚚 Mira's Cargo Admin</h2>
+
+
+<input id="phone" placeholder="Утасны дугаар">
+
+
+<input id="track" placeholder="Track code">
+
+
+<input id="price" placeholder="Үнэ">
+
+
+<button onclick="addCargo()">
+Нэмэх
+</button>
+
+
+<p id="msg"></p>
+
+
+</div>
+
+
+
+<script>
+
+
+function addCargo(){
+
+
+let data =
+JSON.parse(localStorage.getItem("cargo")) || [];
+
+
+data.push({
+
+phone:
+document.getElementById("phone").value,
+
+track:
+document.getElementById("track").value,
+
+price:
+document.getElementById("price").value
+
+});
+
+
+localStorage.setItem(
+"cargo",
+JSON.stringify(data)
+);
+
+
+document.getElementById("msg").innerHTML=
+"Амжилттай нэмэгдлээ";
+
+
+}
+
+
+</script>
+
+
+</body>
+</html>
