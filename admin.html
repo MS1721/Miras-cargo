@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Mira's Cargo Admin</title>
 
 <style>
-
 body{
     margin:0;
     font-family:Arial,sans-serif;
@@ -25,217 +23,125 @@ body{
 .box{
     background:white;
     width:90%;
-    max-width:600px;
+    max-width:450px;
     margin:20px auto;
     padding:20px;
     border-radius:15px;
     box-shadow:0 0 10px #ccc;
 }
 
-input, textarea, button{
+input,button{
     width:100%;
     padding:12px;
-    margin-top:10px;
+    margin:8px 0;
     box-sizing:border-box;
     font-size:16px;
+    border-radius:8px;
 }
 
-textarea{
-    height:250px;
+input{
+    border:1px solid #ccc;
 }
 
 button{
     background:#111;
     color:white;
     border:0;
-    border-radius:8px;
 }
 
-.info{
-    background:#eee;
-    padding:10px;
-    border-radius:8px;
+#msg{
+    text-align:center;
 }
-
 </style>
 
 </head>
 
 <body>
 
-
 <div class="header">
-
 <h1>🚚 Mira's Cargo Admin</h1>
-
-<p>Олон ачаа нэг дор нэмэх</p>
-
+<p>Ачаа нэмэх хэсэг</p>
 </div>
-
 
 
 <div class="box">
 
-<h2>📅 Огноо сонгох</h2>
+<h2>📦 Ачаа нэмэх</h2>
 
+<input id="phone" placeholder="Утасны дугаар">
+
+<input id="track" placeholder="Track code">
+
+<input id="price" placeholder="Үнэ">
+
+<label>📅 Огноо</label>
 <input type="date" id="date">
 
 
-
-<h2>📦 Ачааны мэдээлэл</h2>
-
-<div class="info">
-
-Формат:
-
-<br>
-
-Track code, Утасны дугаар, Үнэ
-
-<br><br>
-
-Жишээ:
-
-<br>
-
-9818243600082,94791721,3500
-
-<br>
-
-9818243600083,94792222,5000
-
-</div>
-
-
-<textarea id="cargoText" placeholder="Track code,Утас,Үнэ"></textarea>
-
-
-
 <button onclick="addCargo()">
-
-✅ Бүгдийг нэмэх
-
+Нэмэх
 </button>
-
 
 <p id="msg"></p>
 
-
 </div>
 
 
+<script type="module">
+
+// ЭНД FIREBASE CONFIG ОРНО
+import { initializeApp } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getDatabase, ref, push, set } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-<script>
+const firebaseConfig = {
+
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_AUTH_DOMAIN",
+databaseURL: "YOUR_DATABASE_URL",
+projectId: "YOUR_PROJECT_ID",
+storageBucket: "YOUR_STORAGE_BUCKET",
+messagingSenderId: "YOUR_SENDER_ID",
+appId: "YOUR_APP_ID"
+
+};
 
 
-function addCargo(){
+const app = initializeApp(firebaseConfig);
 
-
-let date =
-document.getElementById("date").value;
-
-
-let text =
-document.getElementById("cargoText").value;
-
-
-
-if(!date){
-
-alert("Огноо сонгоно уу");
-
-return;
-
-}
-
-
-if(!text){
-
-alert("Ачааны мэдээлэл оруулна уу");
-
-return;
-
-}
+const db = getDatabase(app);
 
 
 
-let cargo =
-JSON.parse(localStorage.getItem("cargo")) || [];
+window.addCargo = function(){
+
+let phone=document.getElementById("phone").value;
+let track=document.getElementById("track").value;
+let price=document.getElementById("price").value;
+let date=document.getElementById("date").value;
 
 
-
-let rows =
-text.trim().split("\n");
+let newCargo = push(ref(db,"cargo"));
 
 
-
-let count=0;
-
-
-
-rows.forEach(row=>{
-
-
-let data =
-row.split(",");
-
-
-
-if(data.length==3){
-
-
-let track =
-data[0].trim();
-
-
-let phone =
-data[1].trim();
-
-
-let price =
-data[2].trim();
-
-
-
-cargo.push({
-
-track:track,
+set(newCargo,{
 
 phone:phone,
-
+track:track,
 price:price,
-
 date:date
 
 });
 
 
-count++;
-
-}
-
-
-});
+document.getElementById("msg").innerHTML=
+"✅ Амжилттай нэмэгдлээ";
 
 
-
-localStorage.setItem(
-"cargo",
-JSON.stringify(cargo)
-);
-
-
-
-document.getElementById("msg").innerHTML =
-"✅ "+count+" ширхэг ачаа нэмэгдлээ";
-
-
-document.getElementById("cargoText").value="";
-
-
-}
-
+};
 
 
 </script>
