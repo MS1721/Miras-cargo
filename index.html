@@ -89,8 +89,12 @@ td,th{
 }
 
 </style>
+    
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 </head>
+   
 
 
 <body>
@@ -257,73 +261,92 @@ Mira’s Cargo
 
 
 
+
+
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDDak9FnmcOH2eOdrlmIzogX9wHhXVfQQI",
+  authDomain: "mirascargo-397d1.firebaseapp.com",
+  databaseURL: "https://mirascargo-397d1-default-rtdb.firebaseio.com",
+  projectId: "mirascargo-397d1",
+  storageBucket: "mirascargo-397d1.firebasestorage.app",
+  messagingSenderId: "747920145779",
+  appId: "1:747920145779:web:71f6e0140eb183f6f25906",
+  measurementId: "G-ED3X9VG2EE"
+};
 
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+function searchCargo() {
 
-let cargo =
-JSON.parse(localStorage.getItem("cargo")) || [];
+    const phone = document.getElementById("phone").value.trim();
 
+    if (phone === "") {
+        alert("Утасны дугаар оруулна уу.");
+        return;
+    }
 
+    db.ref("cargo").once("value").then((snapshot) => {
 
-function searchCargo(){
+        let dataByDate = {};
+        let totalCargo = 0;
+        let totalPrice = 0;
 
+        snapshot.forEach((child) => {
 
-let phone =
-document.getElementById("phone").value;
+            const item = child.val();
 
+            if (item.phone === phone) {
 
-let result =
-document.getElementById("result");
+                if (!dataByDate[item.date]) {
+                    dataByDate[item.date] = [];
+                }
 
+                dataByDate[item.date].push(item);
 
+                totalCargo++;
+                totalPrice += Number(item.price);
 
-let found =
-cargo.filter(x=>x.phone==phone);
+            }
 
+        });
 
+        let html = "";
 
-if(found.length){
+        if (totalCargo === 0) {
+            document.getElementById("result").innerHTML =
+                "❌ Энэ дугаарт бүртгэлтэй ачаа олдсонгүй.";
+            return;
+        }
 
+        for (let date in dataByDate) {
 
-let text="";
-let total=0;
+            html += `<h3>📅 ${date}</h3>`;
 
+            dataByDate[date].forEach(item => {
 
-found.forEach((x,i)=>{
+                html += `
+                <p>
+                📦 ${item.track}<br>
+                💰 ${Number(item.price).toLocaleString()}₮
+                </p>
+                <hr>
+                `;
 
+            });
 
-total += Number(x.price);
+        }
 
+        html += `
+        <h3>📦 Нийт ачаа: ${totalCargo}</h3>
+        <h3>💰 Нийт төлбөр: ${totalPrice.toLocaleString()}₮</h3>
+        `;
 
-text +=
+        document.getElementById("result").innerHTML = html;
 
-"<b>"+(i+1)+"-р ачаа</b><br>"+
-"Track code: "+x.track+"<br>"+
-"Үнэ: "+x.price+"₮<br>"+
-"Огноо: "+x.date+"<br><br>";
-
-
-});
-
-
-text += "<b>Нийт: "+total+"₮</b>";
-
-
-result.innerHTML=text;
-
-
-}else{
-
-
-result.innerHTML=
-"❌ Энэ дугаарт бүртгэлтэй ачаа алга.";
-
+    });
 
 }
-
-
-}
-
 
 </script>
 
