@@ -3,37 +3,58 @@
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Mira's Cargo Admin</title>
 
 <style>
 
 body{
-font-family:Arial;
-background:#f4f4f4;
-padding:20px;
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+}
+
+.header{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:25px;
 }
 
 .box{
-background:white;
-padding:20px;
-border-radius:15px;
-max-width:400px;
-margin:auto;
+    background:white;
+    width:90%;
+    max-width:450px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 0 10px #ccc;
 }
 
-input,button{
-width:100%;
-padding:12px;
-margin:8px 0;
-box-sizing:border-box;
+input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    box-sizing:border-box;
+    font-size:16px;
+    border-radius:8px;
+    border:1px solid #ccc;
 }
 
 button{
-background:#111;
-color:white;
-border:0;
-border-radius:8px;
+    width:100%;
+    padding:13px;
+    background:#111;
+    color:white;
+    border:0;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.success{
+    text-align:center;
+    margin-top:15px;
 }
 
 </style>
@@ -44,9 +65,20 @@ border-radius:8px;
 <body>
 
 
+<div class="header">
+
+<h1>🚚 Mira’s Cargo Admin</h1>
+
+<p>Ачааны мэдээлэл нэмэх</p>
+
+</div>
+
+
+
 <div class="box">
 
-<h2>🚚 Mira's Cargo Admin</h2>
+
+<h2>📦 Ачаа нэмэх</h2>
 
 
 <input id="phone" placeholder="Утасны дугаар">
@@ -58,15 +90,22 @@ border-radius:8px;
 <input id="price" placeholder="Үнэ">
 
 
+<label>📅 Огноо:</label>
+
+<input type="date" id="date">
+
+
+
 <button onclick="addCargo()">
 Нэмэх
 </button>
 
 
-<p id="msg"></p>
+<p class="success" id="msg"></p>
 
 
 </div>
+
 
 
 
@@ -76,32 +115,52 @@ border-radius:8px;
 function addCargo(){
 
 
-let data =
+let cargo =
 JSON.parse(localStorage.getItem("cargo")) || [];
 
 
-data.push({
+
+let data = {
 
 phone:
 document.getElementById("phone").value,
 
+
 track:
 document.getElementById("track").value,
 
-price:
-document.getElementById("price").value
 
-});
+price:
+document.getElementById("price").value,
+
+
+date:
+document.getElementById("date").value
+
+};
+
+
+
+cargo.push(data);
+
 
 
 localStorage.setItem(
 "cargo",
-JSON.stringify(data)
+JSON.stringify(cargo)
 );
 
 
-document.getElementById("msg").innerHTML=
-"Амжилттай нэмэгдлээ";
+
+document.getElementById("msg").innerHTML =
+"✅ Амжилттай нэмэгдлээ";
+
+
+
+document.getElementById("phone").value="";
+document.getElementById("track").value="";
+document.getElementById("price").value="";
+document.getElementById("date").value="";
 
 
 }
