@@ -1,50 +1,131 @@
 <!DOCTYPE html>
 <html lang="mn">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Mira's Cargo</title>
 
-<link rel="stylesheet" href="style.css">
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f5f5f5;
+}
+
+.header{
+    background:#111;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+.logo{
+    font-size:32px;
+    font-weight:bold;
+}
+
+.container{
+    width:90%;
+    max-width:500px;
+    margin:20px auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+    box-shadow:0 0 10px #ddd;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    margin:10px 0;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#111;
+    color:white;
+    border:0;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.result{
+    margin-top:15px;
+    background:#eee;
+    padding:15px;
+    border-radius:10px;
+}
+</style>
 
 </head>
 
 <body>
 
-<header>
-    <h1>Mira’s A&Z Cargo</h1>
-    <p>Ховд аймаг • Булган сум</p>
-</header>
-
-
-<section class="hero">
-
-<h2>Таны барааг хурдан, найдвартай хүргэнэ</h2>
-
-<p>Хятад улсаас захиалгын бараа тээвэрлэлт</p>
-
-</section>
-
+<div class="header">
+<div class="logo">Mira's Cargo</div>
+<p>Хурдан • Найдвартай • Хямд</p>
+</div>
 
 
 <div class="container">
 
-<h2>Бараа шалгах</h2>
+
+<div class="card">
+<h2>Бидний тухай</h2>
+
+<p>
+Mira's Cargo хэрэглэгч та бүхэнд
+хамгийн хямд үнэ болон
+7-14 хоногийн хугацаанд
+хурдан шуурхай хүргэлтийн үйлчилгээ үзүүлж байна.
+</p>
+
+</div>
 
 
-<input id="code" placeholder="Трак кодоо оруулна уу">
+<div class="card">
+
+<h2>Холбоо барих</h2>
+
+<p>📞 Утас: 88000000</p>
+
+<p>
+📍 Хаяг:
+Ховд аймаг, Булган сум,
+Халба байр хотхон,
+54 байр, 17-21
+</p>
+
+<p>Facebook: Эрка Пиндо</p>
+
+</div>
 
 
-<button onclick="checkCargo()">
-Шалгах
+
+<div class="card">
+
+<h2>Ачаа шалгах</h2>
+
+<p>Утасны дугаараа оруулна уу</p>
+
+<input id="phone" placeholder="Утасны дугаар">
+
+<button onclick="searchCargo()">
+Хайх
 </button>
 
 
 <div class="result" id="result">
-
-Барааны мэдээлэл энд гарна
+Ачааны мэдээлэл энд гарна.
+</div>
 
 </div>
 
@@ -53,29 +134,81 @@
 
 
 
-<section class="contact">
+<script>
 
-<h2>Холбоо барих</h2>
+let cargo = [
 
-<p>Утас: 8xxxxxxx</p>
+{
+phone:"99112233",
+track:"9818243600082",
+price:35000
+},
 
-<p>Facebook: Mira’s Cargo</p>
+{
+phone:"99112233",
+track:"9818243600099",
+price:20000
+},
 
-</section>
+{
+phone:"88114455",
+track:"9818243600077",
+price:15000
+}
+
+];
 
 
+function searchCargo(){
 
-<footer>
-
-<p>© 2026 Mira’s Cargo</p>
-
-</footer>
+let phone =
+document.getElementById("phone").value;
 
 
+let result =
+document.getElementById("result");
 
-<script src="script.js"></script>
+
+let found =
+cargo.filter(item => item.phone == phone);
+
+
+if(found.length > 0){
+
+let total=0;
+let text="";
+
+
+found.forEach((item,index)=>{
+
+total += item.price;
+
+text += 
+"<b>"+(index+1)+"-р ачаа</b><br>"+
+"Track code: "+item.track+"<br>"+
+"Үнэ: "+item.price+"₮<br><br>";
+
+});
+
+
+text +=
+"<b>Нийт төлөх: "+total+"₮</b>";
+
+
+result.innerHTML=text;
+
+
+}else{
+
+result.innerHTML=
+"❌ Энэ утсанд бүртгэлтэй ачаа олдсонгүй.";
+
+}
+
+}
+
+</script>
 
 
 </body>
-
 </html>
