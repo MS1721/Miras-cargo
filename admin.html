@@ -25,51 +25,50 @@ body{
 .box{
     background:white;
     width:90%;
-    max-width:450px;
+    max-width:600px;
     margin:20px auto;
     padding:20px;
     border-radius:15px;
     box-shadow:0 0 10px #ccc;
 }
 
-input{
+input, textarea, button{
     width:100%;
     padding:12px;
-    margin:8px 0;
+    margin-top:10px;
     box-sizing:border-box;
     font-size:16px;
-    border-radius:8px;
-    border:1px solid #ccc;
+}
+
+textarea{
+    height:250px;
 }
 
 button{
-    width:100%;
-    padding:13px;
     background:#111;
     color:white;
     border:0;
     border-radius:8px;
-    font-size:16px;
 }
 
-.success{
-    text-align:center;
-    margin-top:15px;
+.info{
+    background:#eee;
+    padding:10px;
+    border-radius:8px;
 }
 
 </style>
 
 </head>
 
-
 <body>
 
 
 <div class="header">
 
-<h1>🚚 Mira’s Cargo Admin</h1>
+<h1>🚚 Mira's Cargo Admin</h1>
 
-<p>Ачааны мэдээлэл нэмэх</p>
+<p>Олон ачаа нэг дор нэмэх</p>
 
 </div>
 
@@ -77,31 +76,49 @@ button{
 
 <div class="box">
 
-
-<h2>📦 Ачаа нэмэх</h2>
-
-
-<input id="phone" placeholder="Утасны дугаар">
-
-
-<input id="track" placeholder="Track code">
-
-
-<input id="price" placeholder="Үнэ">
-
-
-<label>📅 Огноо:</label>
+<h2>📅 Огноо сонгох</h2>
 
 <input type="date" id="date">
 
 
 
+<h2>📦 Ачааны мэдээлэл</h2>
+
+<div class="info">
+
+Формат:
+
+<br>
+
+Track code, Утасны дугаар, Үнэ
+
+<br><br>
+
+Жишээ:
+
+<br>
+
+9818243600082,94791721,3500
+
+<br>
+
+9818243600083,94792222,5000
+
+</div>
+
+
+<textarea id="cargoText" placeholder="Track code,Утас,Үнэ"></textarea>
+
+
+
 <button onclick="addCargo()">
-Нэмэх
+
+✅ Бүгдийг нэмэх
+
 </button>
 
 
-<p class="success" id="msg"></p>
+<p id="msg"></p>
 
 
 </div>
@@ -115,33 +132,91 @@ button{
 function addCargo(){
 
 
+let date =
+document.getElementById("date").value;
+
+
+let text =
+document.getElementById("cargoText").value;
+
+
+
+if(!date){
+
+alert("Огноо сонгоно уу");
+
+return;
+
+}
+
+
+if(!text){
+
+alert("Ачааны мэдээлэл оруулна уу");
+
+return;
+
+}
+
+
+
 let cargo =
 JSON.parse(localStorage.getItem("cargo")) || [];
 
 
 
-let data = {
-
-phone:
-document.getElementById("phone").value,
-
-
-track:
-document.getElementById("track").value,
-
-
-price:
-document.getElementById("price").value,
-
-
-date:
-document.getElementById("date").value
-
-};
+let rows =
+text.trim().split("\n");
 
 
 
-cargo.push(data);
+let count=0;
+
+
+
+rows.forEach(row=>{
+
+
+let data =
+row.split(",");
+
+
+
+if(data.length==3){
+
+
+let track =
+data[0].trim();
+
+
+let phone =
+data[1].trim();
+
+
+let price =
+data[2].trim();
+
+
+
+cargo.push({
+
+track:track,
+
+phone:phone,
+
+price:price,
+
+date:date
+
+});
+
+
+count++;
+
+}
+
+
+});
 
 
 
@@ -153,17 +228,14 @@ JSON.stringify(cargo)
 
 
 document.getElementById("msg").innerHTML =
-"✅ Амжилттай нэмэгдлээ";
+"✅ "+count+" ширхэг ачаа нэмэгдлээ";
 
 
-
-document.getElementById("phone").value="";
-document.getElementById("track").value="";
-document.getElementById("price").value="";
-document.getElementById("date").value="";
+document.getElementById("cargoText").value="";
 
 
 }
+
 
 
 </script>
