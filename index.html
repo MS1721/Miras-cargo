@@ -8,60 +8,60 @@
 
 <style>
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#f5f5f5;
+margin:0;
+font-family:Arial;
+background:#f4f4f4;
 }
 
 .header{
-    background:#111;
-    color:white;
-    text-align:center;
-    padding:25px;
+background:#111;
+color:white;
+text-align:center;
+padding:30px;
 }
 
 .logo{
-    font-size:32px;
-    font-weight:bold;
-}
-
-.container{
-    width:90%;
-    max-width:500px;
-    margin:20px auto;
+font-size:35px;
+font-weight:bold;
 }
 
 .card{
-    background:white;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:20px;
-    box-shadow:0 0 10px #ddd;
+background:white;
+margin:20px auto;
+padding:20px;
+width:90%;
+max-width:500px;
+border-radius:15px;
+box-shadow:0 0 10px #ccc;
 }
 
-input{
-    width:100%;
-    padding:12px;
-    font-size:16px;
-    margin:10px 0;
-    box-sizing:border-box;
+input,button{
+width:100%;
+padding:13px;
+margin-top:10px;
+box-sizing:border-box;
+font-size:16px;
 }
 
 button{
-    width:100%;
-    padding:12px;
-    background:#111;
-    color:white;
-    border:0;
-    border-radius:8px;
-    font-size:16px;
+background:#111;
+color:white;
+border:0;
+border-radius:8px;
 }
 
 .result{
-    margin-top:15px;
-    background:#eee;
-    padding:15px;
-    border-radius:10px;
+margin-top:15px;
+background:#eee;
+padding:15px;
+border-radius:10px;
+}
+
+footer{
+background:#111;
+color:white;
+padding:25px;
+text-align:center;
 }
 </style>
 
@@ -70,49 +70,28 @@ button{
 <body>
 
 <div class="header">
-<div class="logo">Mira's Cargo</div>
+<div class="logo">🚚 Mira's Cargo</div>
+<p>Хятад → Монгол карго үйлчилгээ</p>
 <p>Хурдан • Найдвартай • Хямд</p>
 </div>
 
 
-<div class="container">
-
-
 <div class="card">
-<h2>Бидний тухай</h2>
+
+<h2>Манай үйлчилгээ</h2>
 
 <p>
-Mira's Cargo хэрэглэгч та бүхэнд
-хамгийн хямд үнэ болон
-7-14 хоногийн хугацаанд
-хурдан шуурхай хүргэлтийн үйлчилгээ үзүүлж байна.
+Хэрэглэгч та бүхэнд хамгийн хямд үнэ,
+7-14 хоногийн хугацаанд хурдан шуурхай хүргэлтийн үйлчилгээ үзүүлж байна.
 </p>
 
 </div>
 
 
-<div class="card">
-
-<h2>Холбоо барих</h2>
-
-<p>📞 Утас: 88000000</p>
-
-<p>
-📍 Хаяг:
-Ховд аймаг, Булган сум,
-Халба байр хотхон,
-54 байр, 17-21
-</p>
-
-<p>Facebook: Эрка Пиндо</p>
-
-</div>
-
-
 
 <div class="card">
 
-<h2>Ачаа шалгах</h2>
+<h2>📦 Ачаа шалгах</h2>
 
 <p>Утасны дугаараа оруулна уу</p>
 
@@ -122,93 +101,90 @@ Mira's Cargo хэрэглэгч та бүхэнд
 Хайх
 </button>
 
-
 <div class="result" id="result">
-Ачааны мэдээлэл энд гарна.
+Мэдээлэл энд гарна.
 </div>
 
 </div>
 
 
-</div>
+
+<footer>
+
+<p>📞 Утас: 94791721</p>
+
+<p>📘 Facebook: Erka&pinduoduo</p>
+
+<p>📸 Instagram: erka b.s</p>
+
+
+<h3>📦 Манай карготой холбогдох заавар</h3>
+
+<p>
+豪毕图1721<br>
+📞 17548940432<br><br>
+
+内蒙古<br>
+锡林郭勒盟<br>
+二连浩特市<br>
+环宇商贸城西区5号楼13<br>
+阿古拉百货商铺<br>
+豪毕图1721
+</p>
+
+</footer>
 
 
 
 <script>
 
-let cargo = [
-
-{
-phone:"99112233",
-track:"9818243600082",
-price:35000
-},
-
-{
-phone:"99112233",
-track:"9818243600099",
-price:20000
-},
-
-{
-phone:"88114455",
-track:"9818243600077",
-price:15000
-}
-
-];
+let cargo =
+JSON.parse(localStorage.getItem("cargo")) || [];
 
 
 function searchCargo(){
 
-let phone =
-document.getElementById("phone").value;
+let phone=document.getElementById("phone").value;
+
+let result=document.getElementById("result");
 
 
-let result =
-document.getElementById("result");
+let found=cargo.filter(x=>x.phone==phone);
 
 
-let found =
-cargo.filter(item => item.phone == phone);
-
-
-if(found.length > 0){
+if(found.length){
 
 let total=0;
 let text="";
 
 
-found.forEach((item,index)=>{
+found.forEach((x,i)=>{
 
-total += item.price;
+total+=Number(x.price);
 
-text += 
-"<b>"+(index+1)+"-р ачаа</b><br>"+
-"Track code: "+item.track+"<br>"+
-"Үнэ: "+item.price+"₮<br><br>";
+text+=`
+<b>${i+1}-р ачаа</b><br>
+Track code: ${x.track}<br>
+Үнэ: ${x.price}₮<br><br>
+`;
 
 });
 
 
-text +=
-"<b>Нийт төлөх: "+total+"₮</b>";
-
+text+="<b>Нийт: "+total+"₮</b>";
 
 result.innerHTML=text;
 
 
 }else{
 
-result.innerHTML=
-"❌ Энэ утсанд бүртгэлтэй ачаа олдсонгүй.";
+result.innerHTML="Ачаа олдсонгүй";
 
 }
 
 }
 
 </script>
-
 
 </body>
 </html>
