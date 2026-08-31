@@ -1,891 +1,200 @@
-// ==========================================
-// MIRA'S CARGO - ADMIN SCRIPT
-// ==========================================
+<!DOCTYPE html>
+<html lang="mn">
 
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-// ==========================================
-// FIREBASE CONFIG
-// ==========================================
+<title>Mira's Cargo Admin</title>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDDak9FnmcOH2eOdrlmIzogX9wHhXVfQQI",
-    authDomain: "mirascargo-397d1.firebaseapp.com",
-    databaseURL: "https://mirascargo-397d1-default-rtdb.firebaseio.com",
-    projectId: "mirascargo-397d1",
-    storageBucket: "mirascargo-397d1.firebasestorage.app",
-    messagingSenderId: "747920145779",
-    appId: "1:747920145779:web:71f6e0140eb183f6f25906",
-    measurementId: "G-ED3X9VG2EE"
-};
+<link rel="stylesheet" href="style.css">
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
-firebase.initializeApp(firebaseConfig);
+</head>
 
-const db = firebase.database();
+<body>
 
+<!-- LOGIN -->
 
-// ==========================================
-// ADMIN LOGIN
-// ==========================================
+<div id="loginPage">
 
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "Miras2026";
+    <h1>Mira's Cargo Admin</h1>
 
+    <div class="login-box">
 
-// ==========================================
-// VARIABLES
-// ==========================================
+        <h2>🔐 Admin Login</h2>
 
-let bulkList = [];
-let cargoListenerStarted = false;
+        <input
+            type="text"
+            id="username"
+            placeholder="Нэвтрэх нэр">
 
+        <input
+            type="password"
+            id="password"
+            placeholder="Нууц үг">
 
-// ==========================================
-// LOGIN
-// ==========================================
+        <button onclick="login()">
+            Нэвтрэх
+        </button>
 
-function login() {
+        <p id="loginError"></p>
 
-    const username =
-        document.getElementById("username").value.trim();
+    </div>
 
-    const password =
-        document.getElementById("password").value;
+</div>
 
-    if (
-        username === ADMIN_USERNAME &&
-        password === ADMIN_PASSWORD
-    ) {
 
-        document.getElementById("loginPage").style.display = "none";
+<!-- ADMIN -->
 
-        document.getElementById("adminPage").style.display = "block";
+<div id="adminPage" style="display:none;">
 
-        loadCargo();
+<header>
 
-    } else {
+    <h1>📦 Mira's Cargo Admin</h1>
 
-        document.getElementById("loginError").innerHTML =
-            "❌ Нэвтрэх нэр эсвэл нууц үг буруу!";
+    <button onclick="logout()">
+        Гарах
+    </button>
 
-    }
-}
+</header>
 
 
-// ==========================================
-// LOGOUT
-// ==========================================
+<!-- ШИНЭ АЧАА -->
 
-function logout() {
+<section class="card">
 
-    document.getElementById("loginPage").style.display = "block";
+<h2>📦 Шинэ ачаа нэмэх</h2>
 
-    document.getElementById("adminPage").style.display = "none";
+<input
+    type="date"
+    id="date">
 
-    document.getElementById("username").value = "";
+<input
+    type="text"
+    id="phone"
+    placeholder="Утасны дугаар">
 
-    document.getElementById("password").value = "";
+<input
+    type="text"
+    id="track"
+    placeholder="Track code">
 
-    document.getElementById("loginError").innerHTML = "";
+<input
+    type="number"
+    id="price"
+    placeholder="Үнэ">
 
-}
+<button onclick="addCargo()">
+    ➕ Ачаа нэмэх
+</button>
 
+</section>
 
-// ==========================================
-// SINGLE CARGO ADD
-// ==========================================
 
-function addCargo() {
+<!-- BULK -->
 
-    const date =
-        document.getElementById("date").value.trim();
+<section class="card">
 
-    const phone =
-        document.getElementById("phone").value.trim();
+<h2>📋 Олон ачаа нэг дор оруулах</h2>
 
-    const track =
-        document.getElementById("track").value.trim();
+<textarea
+    id="bulkData"
+    rows="12"
+    placeholder="94791721 123456789 2000
+94791721 234567890 3000
+94791721 345678901 5000"></textarea>
 
-    const price =
-        Number(document.getElementById("price").value);
+<button onclick="previewBulk()">
+    👀 Урьдчилж харах
+</button>
 
+<button onclick="saveBulk()">
+    💾 Бүгдийг хадгалах
+</button>
 
-    if (!date) {
+<div id="previewTable"></div>
 
-        alert("📅 Огноо сонгоно уу.");
+</section>
 
-        return;
-    }
 
+<!-- TRACK ХАЙХ -->
 
-    if (!phone) {
+<section class="card">
 
-        alert("📱 Утасны дугаар оруулна уу.");
+<h2>🔍 Track code хайх</h2>
 
-        return;
-    }
+<input
+    type="text"
+    id="searchTrack"
+    placeholder="Track code">
 
+<button onclick="searchTrack()">
+    🔎 Хайх
+</button>
 
-    if (!track) {
+<div id="searchResult"></div>
 
-        alert("📦 Track code оруулна уу.");
+</section>
 
-        return;
-    }
 
+<!-- ТАЙЛАН -->
 
-    if (!price || price < 0) {
+<section class="card">
 
-        alert("💰 Үнэ зөв оруулна уу.");
+<h2>📊 Нийт тайлан</h2>
 
-        return;
-    }
+<p>
+📦 Нийт ачаа:
+<b id="totalCargo">0</b>
+</p>
 
+<p>
+💰 Нийт орлого:
+<b id="totalIncome">0₮</b>
+</p>
 
-    const cargo = {
+</section>
 
-        date: date,
 
-        phone: phone,
+<!-- ХАДГАЛСАН АЧАА -->
 
-        track: track,
+<section class="card">
 
-        price: price
+<h2>📂 Хадгалсан ачаанууд</h2>
 
-    };
+<div style="overflow-x:auto;">
 
+<table>
 
-    db.ref("cargo")
-        .push(cargo)
+<thead>
 
-        .then(() => {
+<tr>
+<th>Огноо</th>
+<th>Утас</th>
+<th>Track</th>
+<th>Үнэ</th>
+<th>Үйлдэл</th>
+</tr>
 
-            alert("✅ Ачаа амжилттай хадгалагдлаа.");
+</thead>
 
-            document.getElementById("phone").value = "";
+<tbody id="cargoTable"></tbody>
 
-            document.getElementById("track").value = "";
+</table>
 
-            document.getElementById("price").value = "";
+</div>
 
-        })
+</section>
 
-        .catch((error) => {
+</div>
 
-            alert("❌ Алдаа: " + error.message);
 
-        });
+<!-- SCRIPT -->
 
-}
+<script src="script.js"></script>
 
-
-// ==========================================
-// BULK PREVIEW
-// ==========================================
-
-function previewBulk() {
-
-    bulkList = [];
-
-
-    const text =
-        document.getElementById("bulkData").value.trim();
-
-
-    if (!text) {
-
-        alert("📋 Track code-уудыг оруулна уу.");
-
-        return;
-    }
-
-
-    const rows = text.split(/\r?\n/);
-
-
-    let html = `
-        <h3>📋 Оруулсан ачаанууд</h3>
-
-        <p>
-        Нийт:
-        <b>${rows.length}</b>
-        мөр
-        </p>
-
-        <table>
-
-        <tr>
-            <th>#</th>
-            <th>Утас</th>
-            <th>Track</th>
-            <th>Үнэ</th>
-        </tr>
-    `;
-
-
-    rows.forEach((line, index) => {
-
-        line = line.trim();
-
-
-        if (!line) return;
-
-
-        /*
-        Дараах хэлбэрүүдийг дэмжинэ:
-
-        94791721 123456789 2000
-
-        94791721,123456789,2000
-
-        94791721    123456789    2000
-
-        94791721    123456789    2,000
-        */
-
-
-        let parts;
-
-
-        if (line.includes(",")) {
-
-            parts = line
-                .split(",")
-                .map(x => x.trim());
-
-        } else if (line.includes("\t")) {
-
-            parts = line
-                .split("\t")
-                .map(x => x.trim());
-
-        } else {
-
-            parts = line
-                .split(/\s+/);
-        }
-
-
-        if (parts.length < 3) {
-
-            html += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td colspan="3">
-                        ❌ Буруу формат
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        const phone = parts[0];
-
-        const track = parts[1];
-
-        const priceText =
-            parts.slice(2)
-                .join("")
-                .replace(/,/g, "")
-                .replace(/₮/g, "")
-                .trim();
-
-
-        const price = Number(priceText);
-
-
-        if (
-            !phone ||
-            !track ||
-            isNaN(price)
-        ) {
-
-            html += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td colspan="3">
-                        ❌ Мэдээлэл буруу
-                    </td>
-                </tr>
-            `;
-
-            return;
-        }
-
-
-        bulkList.push({
-
-            phone: phone,
-
-            track: track,
-
-            price: price
-
-        });
-
-
-        html += `
-            <tr>
-
-                <td>${bulkList.length}</td>
-
-                <td>${phone}</td>
-
-                <td>${track}</td>
-
-                <td>
-                    ${price.toLocaleString()}₮
-                </td>
-
-            </tr>
-        `;
-
-    });
-
-
-    html += `</table>`;
-
-
-    if (bulkList.length === 0) {
-
-        html =
-            "<p>❌ Зөв мэдээлэл олдсонгүй.</p>";
-
-    } else {
-
-        html += `
-            <h3>
-                📦 Нийт ${bulkList.length} ачаа
-            </h3>
-        `;
-
-    }
-
-
-    document.getElementById("previewTable").innerHTML = html;
-
-}
-
-
-// ==========================================
-// BULK SAVE
-// ==========================================
-
-function saveBulk() {
-
-    const date =
-        document.getElementById("date").value.trim();
-
-
-    if (!date) {
-
-        alert("📅 Эхлээд огноо сонгоно уу.");
-
-        return;
-    }
-
-
-    if (bulkList.length === 0) {
-
-        alert(
-            "❌ Эхлээд Bulk Paste → Preview хийнэ үү."
-        );
-
-        return;
-    }
-
-
-    const confirmSave = confirm(
-
-        "📦 " +
-        bulkList.length +
-        " ачааг " +
-        date +
-        " огноогоор хадгалах уу?"
-
-    );
-
-
-    if (!confirmSave) return;
-
-
-    /*
-    Firebase update ашиглаж байгаа учраас
-    олон ачааг нэг дор илгээж байна.
-    */
-
-
-    const updates = {};
-
-
-    bulkList.forEach(item => {
-
-        const newKey =
-            db.ref("cargo").push().key;
-
-
-        updates["cargo/" + newKey] = {
-
-            date: date,
-
-            phone: item.phone,
-
-            track: item.track,
-
-            price: Number(item.price)
-
-        };
-
-    });
-
-
-    db.ref()
-        .update(updates)
-
-        .then(() => {
-
-            alert(
-
-                "✅ Амжилттай хадгаллаа!\n\n" +
-
-                "📅 Огноо: " + date + "\n" +
-
-                "📦 Ачаа: " +
-                bulkList.length + " ширхэг"
-
-            );
-
-
-            document.getElementById("bulkData").value = "";
-
-            document.getElementById("previewTable").innerHTML = "";
-
-            bulkList = [];
-
-
-        })
-
-        .catch(error => {
-
-            alert(
-                "❌ Хадгалах үед алдаа гарлаа:\n" +
-                error.message
-            );
-
-        });
-
-}
-
-
-// ==========================================
-// LOAD CARGO
-// ==========================================
-
-function loadCargo() {
-
-    const table =
-        document.getElementById("cargoTable");
-
-
-    if (!table) return;
-
-
-    if (cargoListenerStarted) return;
-
-
-    cargoListenerStarted = true;
-
-
-    db.ref("cargo").on("value", (snapshot) => {
-
-        table.innerHTML = "";
-
-
-        let totalCargo = 0;
-
-        let totalIncome = 0;
-
-
-        snapshot.forEach((child) => {
-
-            const key = child.key;
-
-            const data = child.val();
-
-
-            totalCargo++;
-
-            totalIncome +=
-                Number(data.price) || 0;
-
-
-            table.innerHTML += `
-
-                <tr>
-
-                    <td>
-                        ${escapeHTML(data.date || "")}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(data.phone || "")}
-                    </td>
-
-                    <td>
-                        ${escapeHTML(data.track || "")}
-                    </td>
-
-                    <td>
-                        ${(
-                            Number(data.price) || 0
-                        ).toLocaleString()}₮
-                    </td>
-
-                    <td>
-
-                        <button
-                            onclick="editCargo('${key}')">
-                            ✏️
-                        </button>
-
-                        <button
-                            onclick="deleteCargo('${key}')">
-                            🗑️
-                        </button>
-
-                    </td>
-
-                </tr>
-
-            `;
-
-        });
-
-
-        document.getElementById("totalCargo").innerHTML =
-            totalCargo.toLocaleString();
-
-
-        document.getElementById("totalIncome").innerHTML =
-            totalIncome.toLocaleString() + "₮";
-
-    });
-
-}
-
-
-// ==========================================
-// DELETE CARGO
-// ==========================================
-
-function deleteCargo(id) {
-
-    const ok = confirm(
-        "🗑️ Энэ ачааг устгах уу?"
-    );
-
-
-    if (!ok) return;
-
-
-    db.ref("cargo/" + id)
-        .remove()
-
-        .then(() => {
-
-            alert("✅ Ачаа устгагдлаа.");
-
-        })
-
-        .catch(error => {
-
-            alert(
-                "❌ Устгах үед алдаа:\n" +
-                error.message
-            );
-
-        });
-
-}
-
-
-// ==========================================
-// EDIT CARGO
-// ==========================================
-
-function editCargo(id) {
-
-    db.ref("cargo/" + id)
-        .once("value")
-
-        .then(snapshot => {
-
-            const data = snapshot.val();
-
-
-            if (!data) {
-
-                alert("❌ Ачаа олдсонгүй.");
-
-                return;
-            }
-
-
-            const newDate = prompt(
-                "📅 Огноо:",
-                data.date
-            );
-
-
-            if (newDate === null) return;
-
-
-            const newPhone = prompt(
-                "📱 Утас:",
-                data.phone
-            );
-
-
-            if (newPhone === null) return;
-
-
-            const newTrack = prompt(
-                "📦 Track code:",
-                data.track
-            );
-
-
-            if (newTrack === null) return;
-
-
-            const newPrice = prompt(
-                "💰 Үнэ:",
-                data.price
-            );
-
-
-            if (
-                newPrice === null ||
-                newPrice.trim() === ""
-            ) return;
-
-
-            const price =
-                Number(
-                    newPrice
-                        .replace(/,/g, "")
-                        .replace(/₮/g, "")
-                );
-
-
-            if (isNaN(price)) {
-
-                alert("❌ Үнэ буруу байна.");
-
-                return;
-            }
-
-
-            db.ref("cargo/" + id)
-                .update({
-
-                    date: newDate.trim(),
-
-                    phone: newPhone.trim(),
-
-                    track: newTrack.trim(),
-
-                    price: price
-
-                })
-
-                .then(() => {
-
-                    alert(
-                        "✅ Ачааны мэдээлэл шинэчлэгдлээ."
-                    );
-
-                })
-
-                .catch(error => {
-
-                    alert(
-                        "❌ Засах үед алдаа:\n" +
-                        error.message
-                    );
-
-                });
-
-        });
-
-}
-
-
-// ==========================================
-// SEARCH TRACK CODE
-// ==========================================
-
-function searchTrack() {
-
-    const input =
-        document.getElementById("searchTrack");
-
-
-    if (!input) return;
-
-
-    const track =
-        input.value.trim();
-
-
-    if (!track) {
-
-        alert("📦 Track code оруулна уу.");
-
-        return;
-    }
-
-
-    db.ref("cargo")
-        .once("value")
-
-        .then(snapshot => {
-
-            let found = false;
-
-            let html = "";
-
-
-            snapshot.forEach(child => {
-
-                const data = child.val();
-
-
-                if (
-                    String(data.track).trim() === track
-                ) {
-
-                    found = true;
-
-
-                    html += `
-
-                        <div class="card">
-
-                            <h3>
-                                📦 Ачааны мэдээлэл
-                            </h3>
-
-                            <p>
-                                <b>📅 Огноо:</b>
-                                ${escapeHTML(data.date || "")}
-                            </p>
-
-                            <p>
-                                <b>📱 Утас:</b>
-                                ${escapeHTML(data.phone || "")}
-                            </p>
-
-                            <p>
-                                <b>📦 Track:</b>
-                                ${escapeHTML(data.track || "")}
-                            </p>
-
-                            <p>
-                                <b>💰 Үнэ:</b>
-                                ${
-                                    (
-                                        Number(data.price) || 0
-                                    ).toLocaleString()
-                                }₮
-                            </p>
-
-                        </div>
-
-                    `;
-
-                }
-
-            });
-
-
-            if (!found) {
-
-                html =
-                    "<p>❌ Track code олдсонгүй.</p>";
-
-            }
-
-
-            document.getElementById(
-                "searchResult"
-            ).innerHTML = html;
-
-        })
-
-        .catch(error => {
-
-            alert(
-                "❌ Хайлт хийхэд алдаа:\n" +
-                error.message
-            );
-
-        });
-
-}
-
-
-// ==========================================
-// ESCAPE HTML
-// ==========================================
-
-function escapeHTML(value) {
-
-    return String(value)
-
-        .replace(/&/g, "&amp;")
-
-        .replace(/</g, "&lt;")
-
-        .replace(/>/g, "&gt;")
-
-        .replace(/"/g, "&quot;")
-
-        .replace(/'/g, "&#039;");
-
-}
-
-
-// ==========================================
-// ENTER KEY LOGIN
-// ==========================================
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const password =
-            document.getElementById("password");
-
-
-        if (password) {
-
-            password.addEventListener(
-                "keydown",
-                function (event) {
-
-                    if (event.key === "Enter") {
-
-                        login();
-
-                    }
-
-                }
-            );
-
-        }
-
-    }
-);
+</body>
+</html>
