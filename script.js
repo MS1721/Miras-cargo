@@ -16,12 +16,26 @@ const db = firebase.database();
 const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "Miras2026";
 
+let bulkList = [];
+let cargoListenerStarted = false;
+
+
+/* =========================
+   ADMIN LOGIN
+========================= */
+
 function login() {
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+    const username =
+        document.getElementById("username").value.trim();
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    const password =
+        document.getElementById("password").value;
+
+    if (
+        username === ADMIN_USERNAME &&
+        password === ADMIN_PASSWORD
+    ) {
 
         document.getElementById("loginPage").style.display = "none";
         document.getElementById("adminPage").style.display = "block";
@@ -30,12 +44,15 @@ function login() {
 
     } else {
 
-        document.getElementById("loginError").innerHTML =
-        "Нэвтрэх нэр эсвэл нууц үг буруу!";
-
+        document.getElementById("loginError").innerText =
+            "Нэвтрэх нэр эсвэл нууц үг буруу!";
     }
-
 }
+
+
+/* =========================
+   LOGOUT
+========================= */
 
 function logout() {
 
@@ -44,17 +61,31 @@ function logout() {
 
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
-    document.getElementById("loginError").innerHTML = "";
 
+    document.getElementById("loginError").innerText = "";
 }
+
+
+/* =========================
+   ADD ONE CARGO
+========================= */
+
 function addCargo() {
 
-    const date = document.getElementById("date").value;
-    const phone = document.getElementById("phone").value.trim();
-    const track = document.getElementById("track").value.trim();
-    const price = document.getElementById("price").value;
+    const date =
+        document.getElementById("date").value.trim();
+
+    const phone =
+        document.getElementById("phone").value.trim();
+
+    const track =
+        document.getElementById("track").value.trim();
+
+    const price =
+        Number(document.getElementById("price").value);
 
     if (!date || !phone || !track || !price) {
+
         alert("Бүх мэдээллээ бөглөнө үү.");
         return;
     }
@@ -63,77 +94,107 @@ function addCargo() {
         date: date,
         phone: phone,
         track: track,
-        price: Number(price)
+        price: price
     };
 
-    db.ref("cargo").push(cargo)
-    .then(() => {
+    const newRef = db.ref("cargo").push();
 
-        alert("Амжилттай хадгаллаа.");
+    newRef.set(cargo)
+        .then(() => {
 
-        document.getElementById("phone").value = "";
-        document.getElementById("track").value = "";
-        document.getElementById("price").value = "";
+            alert("✅ Ачаа амжилттай хадгалагдлаа.");
 
-        loadCargo();
+            document.getElementById("phone").value = "";
+            document.getElementById("track").value = "";
+            document.getElementById("price").value = "";
 
-    })
-    .catch(error => {
+        })
+        .catch(error => {
 
-        alert(error.message);
-
-    });
-
+            console.error(error);
+            alert("❌ Хадгалахад алдаа гарлаа: " + error.message);
+        });
 }
+
+
+/* =========================
+   LOAD CARGO
+========================= */
+
 function loadCargo() {
 
-    const table = document.getElementById("cargoTable");
+    const table =
+        document.getElementById("cargoTable");
 
-    table.innerHTML = "";
+    if (!table) return;
 
-    let totalCargo = 0;
-    let totalIncome = 0;
+    if (cargoListenerStarted) return;
 
-    db.ref("cargo").on("value", (snapshot) => {
+    cargoListenerStarted = true;
+
+    db.ref("cargo").on("value", snapshot => {
 
         table.innerHTML = "";
 
-        totalCargo = 0;
-        totalIncome = 0;
+        let totalCargo = 0;
+        let totalIncome = 0;
 
-        snapshot.forEach((child) => {
+        snapshot.forEach(child => {
 
-            const key = child.key;
+            const id = child.key;
             const data = child.val();
 
+            const price = Number(data.price) || 0;
+
             totalCargo++;
-            totalIncome += Number(data.price);
+            totalIncome += price;
 
             table.innerHTML += `
                 <tr>
-                    <td>${data.date}</td>
-                    <td>${data.phone}</td>
-                    <td>${data.track}</td>
-                    <td>${Number(data.price).toLocaleString()}₮</td>
+
+                    <td>${escapeHTML(data.date || "")}</td>
+
+                    <td>${escapeHTML(data.phone || "")}</td>
+
+                    <td>${escapeHTML(data.track || "")}</td>
+
                     <td>
-                        <button onclick="editCargo('${key}')">✏️</button>
-                        <button onclick="deleteCargo('${key}')">🗑️</button>
+                        ${price.toLocaleString()}₮
                     </td>
+
+                    <td>
+
+                        <button onclick="editCargo('${id}')">
+                            ✏️
+                        </button>
+
+                        <button onclick="deleteCargo('${id}')">
+                            🗑️
+                        </button>
+
+                    </td>
+
                 </tr>
             `;
-
         });
 
-        document.getElementById("totalCargo").innerHTML = totalCargo;
-        document.getElementById("totalIncome").innerHTML =
+        document.getElementById("totalCargo").innerText =
+            totalCargo;
+
+        document.getElementById("totalIncome").innerText =
             totalIncome.toLocaleString() + "₮";
-
     });
-
 }
+
+
+/* =========================
+   DELETE CARGO
+========================= */
+
 function deleteCargo(id) {
 
-    const ok = confirm("Энэ ачааг устгах уу?");
+    const ok =
+        confirm("Энэ ачааг устгах уу?");
 
     if (!ok) return;
 
@@ -141,63 +202,136 @@ function deleteCargo(id) {
         .remove()
         .then(() => {
 
-            alert("Амжилттай устгалаа.");
+            alert("✅ Ачаа устгагдлаа.");
 
         })
-        .catch((error) => {
+        .catch(error => {
 
-            alert(error.message);
-
+            alert(
+                "❌ Устгахад алдаа гарлаа: " +
+                error.message
+            );
         });
-
 }
+
+
+/* =========================
+   EDIT CARGO
+========================= */
+
 function editCargo(id) {
 
-    const newPrice = prompt("Шинэ үнийг оруулна уу");
-
-    if (newPrice === null || newPrice === "") return;
-
     db.ref("cargo/" + id)
-    .update({
-        price: Number(newPrice)
-    })
-    .then(() => {
+        .once("value")
+        .then(snapshot => {
 
-        alert("Амжилттай шинэчлэгдлээ.");
+            const data = snapshot.val();
 
-    })
-    .catch((error) => {
+            if (!data) {
+                alert("Ачаа олдсонгүй.");
+                return;
+            }
 
-        alert(error.message);
+            const newPrice =
+                prompt(
+                    "Шинэ үнэ:",
+                    data.price
+                );
 
-    });
+            if (
+                newPrice === null ||
+                newPrice.trim() === ""
+            ) {
+                return;
+            }
 
+            const price =
+                Number(newPrice);
+
+            if (
+                !Number.isFinite(price) ||
+                price < 0
+            ) {
+                alert("Үнэ буруу байна.");
+                return;
+            }
+
+            return db.ref("cargo/" + id)
+                .update({
+                    price: price
+                });
+
+        })
+        .then(result => {
+
+            if (result === undefined) return;
+
+            alert("✅ Үнэ амжилттай шинэчлэгдлээ.");
+
+        })
+        .catch(error => {
+
+            alert(
+                "❌ Засахад алдаа гарлаа: " +
+                error.message
+            );
+        });
 }
-let bulkList = [];
+
+
+/* =========================
+   BULK PREVIEW
+========================= */
 
 function previewBulk() {
 
     bulkList = [];
 
-    const text = document
-        .getElementById("bulkData")
-        .value
-        .trim();
+    const text =
+        document
+            .getElementById("bulkData")
+            .value
+            .trim();
 
-    const rows = text.split("\n");
+    if (!text) {
+
+        alert("Track code-уудаа оруулна уу.");
+        return;
+    }
+
+    const rows =
+        text.split(/\r?\n/);
 
     let html = `
-    <table>
-    <tr>
-        <th>Утас</th>
-        <th>Track</th>
-        <th>Үнэ</th>
-    </tr>
+        <table>
+            <tr>
+                <th>№</th>
+                <th>Утас</th>
+                <th>Track</th>
+                <th>Үнэ</th>
+            </tr>
     `;
+
+    let number = 0;
 
     rows.forEach(line => {
 
-        const parts = line.trim().split(/\s+/);
+        line = line.trim();
+
+        if (!line) return;
+
+        const parts =
+            line.split(/\s+/);
+
+        /*
+          FORMAT:
+
+          УТАС TRACK ҮНЭ
+
+          Жишээ:
+
+          94791721 123456789 2000
+        */
 
         if (parts.length < 3) return;
 
@@ -205,138 +339,239 @@ function previewBulk() {
         const track = parts[1];
         const price = Number(parts[2]);
 
+        if (
+            !phone ||
+            !track ||
+            !Number.isFinite(price)
+        ) {
+            return;
+        }
+
+        number++;
+
         bulkList.push({
-            phone,
-            track,
-            price
+            phone: phone,
+            track: track,
+            price: price
         });
 
         html += `
-        <tr>
-            <td>${phone}</td>
-            <td>${track}</td>
-            <td>${price.toLocaleString()}₮</td>
-        </tr>
+            <tr>
+                <td>${number}</td>
+                <td>${escapeHTML(phone)}</td>
+                <td>${escapeHTML(track)}</td>
+                <td>${price.toLocaleString()}₮</td>
+            </tr>
         `;
-
     });
 
     html += "</table>";
 
-    document.getElementById("previewTable").innerHTML = html;
+    document.getElementById("previewTable").innerHTML =
+        html;
 
+    if (bulkList.length === 0) {
+
+        alert(
+            "Зөв форматтай мэдээлэл олдсонгүй.\n\n" +
+            "Жишээ:\n" +
+            "94791721 123456789 2000"
+        );
+
+        return;
+    }
+
+    alert(
+        "📋 " +
+        bulkList.length.toLocaleString() +
+        " ачаа бэлэн боллоо."
+    );
 }
-function saveBulk() {
 
-    const date = document.getElementById("date").value;
+
+/* =========================
+   BULK SAVE
+========================= */
+
+async function saveBulk() {
+
+    const date =
+        document.getElementById("date").value.trim();
 
     if (!date) {
-        alert("Эхлээд огноо сонгоно уу.");
+
+        alert(
+            "Эхлээд ачаа ирсэн огноогоо сонгоно уу."
+        );
+
         return;
     }
 
     if (bulkList.length === 0) {
-        alert("Preview хийсний дараа хадгална.");
+
+        alert(
+            "Эхлээд Preview хийнэ үү."
+        );
+
         return;
     }
 
-    let promises = [];
-
-    bulkList.forEach(item => {
-
-        const cargo = {
-            date: date,
-            phone: item.phone,
-            track: item.track,
-            price: item.price
-        };
-
-        promises.push(
-            db.ref("cargo").push(cargo)
+    const confirmSave =
+        confirm(
+            bulkList.length.toLocaleString() +
+            " ачааг " +
+            date +
+            " огноотой хадгалах уу?"
         );
 
-    });
+    if (!confirmSave) return;
 
-    Promise.all(promises)
-    .then(() => {
+    try {
 
-        alert("Бүх ачаа амжилттай хадгалагдлаа.");
+        /*
+          Нэг бүрийг тусдаа push хийхийн оронд
+          Firebase multi-location update ашиглана.
+        */
+
+        const updates = {};
+
+        bulkList.forEach(item => {
+
+            const key =
+                db.ref("cargo").push().key;
+
+            updates["cargo/" + key] = {
+
+                date: date,
+
+                phone: item.phone,
+
+                track: item.track,
+
+                price: Number(item.price)
+
+            };
+        });
+
+        await db.ref().update(updates);
+
+        alert(
+            "✅ " +
+            bulkList.length.toLocaleString() +
+            " ачаа амжилттай хадгалагдлаа."
+        );
 
         document.getElementById("bulkData").value = "";
+
         document.getElementById("previewTable").innerHTML = "";
 
         bulkList = [];
 
-        loadCargo();
+    }
+    catch (error) {
 
-    })
-    .catch((error) => {
+        console.error(error);
 
-        alert(error.message);
-
-    });
-
+        alert(
+            "❌ Bulk хадгалахад алдаа гарлаа:\n" +
+            error.message
+        );
+    }
 }
+
+
+/* =========================
+   SEARCH TRACK
+========================= */
+
 function searchTrack() {
 
-    const track = document
-        .getElementById("searchTrack")
-        .value
-        .trim();
+    const track =
+        document
+            .getElementById("searchTrack")
+            .value
+            .trim();
 
-    if (track === "") {
+    if (!track) {
 
         alert("Track code оруулна уу.");
-
         return;
-
     }
 
     db.ref("cargo")
-    .once("value")
-    .then((snapshot) => {
+        .once("value")
+        .then(snapshot => {
 
-        let found = false;
+            let found = false;
+            let html = "";
 
-        let html = "";
+            snapshot.forEach(child => {
 
-        snapshot.forEach((child) => {
+                const data = child.val();
 
-            const data = child.val();
+                if (String(data.track) === track) {
 
-            if (data.track === track) {
+                    found = true;
 
-                found = true;
+                    html += `
+                        <div class="card">
 
-                html = `
-                <div class="card">
+                            <p>
+                                <b>📅 Огноо:</b>
+                                ${escapeHTML(data.date || "")}
+                            </p>
 
-                <p><b>📅 Огноо:</b> ${data.date}</p>
+                            <p>
+                                <b>📱 Утас:</b>
+                                ${escapeHTML(data.phone || "")}
+                            </p>
 
-                <p><b>📱 Утас:</b> ${data.phone}</p>
+                            <p>
+                                <b>📦 Track:</b>
+                                ${escapeHTML(data.track || "")}
+                            </p>
 
-                <p><b>📦 Track:</b> ${data.track}</p>
+                            <p>
+                                <b>💰 Үнэ:</b>
+                                ${(Number(data.price) || 0)
+                                    .toLocaleString()}₮
+                            </p>
 
-                <p><b>💰 Үнэ:</b>
-                ${Number(data.price).toLocaleString()}₮
-                </p>
+                        </div>
+                    `;
+                }
+            });
 
-                </div>
-                `;
+            if (!found) {
 
+                html =
+                    "<p>❌ Track code олдсонгүй.</p>";
             }
 
+            document.getElementById("searchResult").innerHTML =
+                html;
+        })
+        .catch(error => {
+
+            alert(
+                "❌ Хайхад алдаа гарлаа: " +
+                error.message
+            );
         });
-
-        if (!found) {
-
-            html =
-            "<p>❌ Track code олдсонгүй.</p>";
-
-        }
-
-        document.getElementById("searchResult").innerHTML = html;
-
-    });
-
 }
+
+
+/* =========================
+   SECURITY HELPER
+========================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
