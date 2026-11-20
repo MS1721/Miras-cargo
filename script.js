@@ -17,7 +17,7 @@ const db = firebase.database();
 
 // Firebase Console → Authentication → Users хэсгээс өөрийн админы UID-г хуулж энд тавина.
 // UID-г тохируулаагүй үед админ хэсэг нээгдэхгүй.
-const ADMIN_UID = "PASTE_YOUR_ADMIN_UID_HERE";
+const ADMIN_UID = "FV2Zr0E8FlO6BLDxtiXds4Ukds23";
 let cargoCache = {};
 let bulkList = [];
 
