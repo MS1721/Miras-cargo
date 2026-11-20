@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "cargo": {
+      ".read": "(auth != null && auth.uid == 'PASTE_YOUR_ADMIN_UID_HERE') || (query.orderByChild == 'phone' && query.equalTo != null)",
+      ".write": "auth != null && auth.uid == 'PASTE_YOUR_ADMIN_UID_HERE'",
+      ".indexOn": ["phone", "track", "date"]
+    }
+  }
+}

@@ -1,355 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="mn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Mira's Cargo</title>
-
-<style>
-
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#f5f5f5;
-}
-
-.header{
-    background:#111;
-    color:white;
-    text-align:center;
-    padding:35px 15px;
-}
-
-.logo{
-    font-size:38px;
-    font-weight:bold;
-}
-
-.box{
-    background:white;
-    width:90%;
-    max-width:500px;
-    margin:20px auto;
-    padding:20px;
-    border-radius:18px;
-    box-shadow:0 0 10px #ccc;
-}
-
-h2{
-    text-align:center;
-}
-
-input{
-    width:100%;
-    padding:13px;
-    margin-top:10px;
-    box-sizing:border-box;
-    border-radius:8px;
-    border:1px solid #ccc;
-    font-size:16px;
-}
-
-button{
-    width:100%;
-    padding:13px;
-    margin-top:10px;
-    background:#111;
-    color:white;
-    border:0;
-    border-radius:8px;
-    font-size:16px;
-}
-
-.result{
-    background:#eee;
-    padding:15px;
-    margin-top:15px;
-    border-radius:10px;
-}
-
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-td,th{
-    border:1px solid #ddd;
-    padding:10px;
-    text-align:center;
-}
-
-
-.footer{
-    background:#111;
-    color:white;
-    padding:25px;
-    text-align:center;
-}
-
-</style>
-    
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1457d9">
+  <meta name="description" content="Mira's Cargo — Ачаагаа утасны дугаар болон Track code-оор шалгана уу.">
+  <title>Mira's Cargo — Ачаа шалгах</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
-   
-
-
 <body>
-
-
-<div class="header">
-
-<div class="logo">
-🚚 Mira’s Cargo
-</div>
-
-<h3>Ховд аймаг, Булган сум</h3>
-
-<p>
-Хамгийн хурдан, шуурхай,
-хамгийн хямд үнээр та бүхэнд хүргэнэ.
-</p>
-
-<p>
-📦 7-14 хоногт таны гар дээр хүрнэ.
-</p>
-
-</div>
-
-
-
-<div class="box">
-
-<h2>📦 Ачаа шалгах</h2>
-
-<p>Утасны дугаараа оруулна уу</p>
-
-
-<input id="phone" placeholder="Утасны дугаар">
-
-
-<button onclick="searchCargo()">
-🔍 Хайх
-</button>
-
-
-<div class="result" id="result">
-Ачааны мэдээлэл энд гарна.
-</div>
-
-
-</div>
-
-
-
-
-<div class="box">
-
-<h2>📞 Холбоо барих</h2>
-
-<p>📱 Утас: 94791721</p>
-
-<p>📘 Facebook: Erka&pinduoduo</p>
-
-<p>📸 Instagram: erka b.s</p>
-
-
-</div>
-
-
-
-
-<div class="box">
-
-<h2>📦 Манай карготой холбогдох заавар</h2>
-
-
-<p>
-
-豪毕图1721<br><br>
-
-📞 17548940432<br><br>
-
-内蒙古<br>
-锡林郭勒盟<br>
-二连浩特市<br>
-环宇商贸城西区5号楼13<br>
-阿古拉百货商铺<br>
-豪毕图1721
-
-</p>
-
-</div>
-
-
-
-
-<div class="box">
-
-<h2>💰 Каргоны үнийн мэдээлэл</h2>
-
-
-<table>
-
-<tr>
-<th>Ангилал</th>
-<th>Үнэ</th>
-</tr>
-
-
-<tr>
-<td>0–100 гр</td>
-<td>1,000₮</td>
-</tr>
-
-
-<tr>
-<td>100–300 гр</td>
-<td>1,500₮</td>
-</tr>
-
-
-<tr>
-<td>Өмд, цамц гэх мэт (ууттай хувцас)</td>
-<td>2,800–4,500₮</td>
-</tr>
-
-
-<tr>
-<td>Гадуур хувцас, гутал гэх мэт (том уут, хайрцагтай)</td>
-<td>6,000–10,000₮</td>
-</tr>
-
-
-<tr>
-<td>Жинтэй бараа</td>
-<td>1 кг = 3,000₮</td>
-</tr>
-
-
-<tr>
-<td>Овор ихтэй бараа</td>
-<td>1 м³ = 800¥</td>
-</tr>
-
-
-</table>
-
-
-</div>
-
-
-
-
-<div class="footer">
-
-<h3>
-⭐ Хамгийн зөв сонголт —
-Mira’s Cargo
-</h3>
-
-<p>
-Хурдан • Найдвартай • Хямд
-</p>
-
-</div>
-
-
-
-
-
-
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDDak9FnmcOH2eOdrlmIzogX9wHhXVfQQI",
-  authDomain: "mirascargo-397d1.firebaseapp.com",
-  databaseURL: "https://mirascargo-397d1-default-rtdb.firebaseio.com",
-  projectId: "mirascargo-397d1",
-  storageBucket: "mirascargo-397d1.firebasestorage.app",
-  messagingSenderId: "747920145779",
-  appId: "1:747920145779:web:71f6e0140eb183f6f25906",
-  measurementId: "G-ED3X9VG2EE"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-function searchCargo() {
-
-    const phone = document.getElementById("phone").value.trim();
-
-    if (phone === "") {
-        alert("Утасны дугаар оруулна уу.");
+  <main class="app customer-shell">
+    <section class="customer-hero">
+      <div class="brand-mark">M</div>
+      <p class="eyebrow">MIRA'S CARGO</p>
+      <h1>Таны ачаа хаана явна вэ?</h1>
+      <p>Бүртгүүлсэн утасны дугаараа оруулж<br>өөрийн бүх ачааг нэг дор шалгана уу.</p>
+    </section>
+
+    <section class="panel customer-card">
+      <div class="section-heading">
+        <div><p class="eyebrow">CARGO TRACKING</p><h2>Ачаа шалгах</h2></div>
+        <span class="icon-chip">📦</span>
+      </div>
+      <form id="trackingForm">
+        <label for="phone">Бүртгүүлсэн утасны дугаар</label>
+        <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Жишээ: 99112233" required>
+        <button id="searchBtn" class="primary full" type="submit">🔎 Миний ачааг хайх</button>
+      </form>
+      <div id="result" class="customer-result" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <p class="eyebrow">ХҮРГЭЛТИЙН МЭДЭЭЛЭЛ</p>
+      <h2 style="margin:0 0 8px;font-size:18px">Mira's Cargo</h2>
+      <p class="muted" style="line-height:1.6;margin:0">Ховд аймаг, Булган суманд таны захиалгыг найдвартай хүргэнэ.</p>
+      <p class="help" style="margin-bottom:0">Ачааны мэдээлэл харагдахгүй байвал утасны дугаар болон Track code-оо зөв бичсэн эсэхээ шалгана уу.</p>
+    </section>
+    <footer class="customer-footer">© Mira's Cargo · Баярлалаа ❤️<br><a class="admin-link" href="admin.html">Админ нэвтрэх</a></footer>
+  </main>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDak9FnmcOH2eOdrlmIzogX9wHhXVfQQI",
+      authDomain: "mirascargo-397d1.firebaseapp.com",
+      databaseURL: "https://mirascargo-397d1-default-rtdb.firebaseio.com",
+      projectId: "mirascargo-397d1",
+      storageBucket: "mirascargo-397d1.firebasestorage.app",
+      messagingSenderId: "747920145779",
+      appId: "1:747920145779:web:71f6e0140eb183f6f25906",
+      measurementId: "G-ED3X9VG2EE"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const $ = id => document.getElementById(id);
+    const normalize = value => String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+    const makeSearchKey = (phone, track) => normalize(phone) + "|" + normalize(track);
+    const safe = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[ch]));
+    const money = value => (Number(value) || 0).toLocaleString("mn-MN") + "₮";
+
+    $("trackingForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const phone = $("phone").value.trim().replace(/\s+/g, "");
+      if (!phone) {
+        $("result").innerHTML = '<p class="error">Утасны дугаараа оруулна уу.</p>';
         return;
-    }
-
-    db.ref("cargo").once("value").then((snapshot) => {
-
-        let dataByDate = {};
-        let totalCargo = 0;
-        let totalPrice = 0;
-
-        snapshot.forEach((child) => {
-
-            const item = child.val();
-
-            if (item.phone === phone) {
-
-                if (!dataByDate[item.date]) {
-                    dataByDate[item.date] = [];
-                }
-
-                dataByDate[item.date].push(item);
-
-                totalCargo++;
-                totalPrice += Number(item.price);
-
-            }
-
-        });
-
-        let html = "";
-
-        if (totalCargo === 0) {
-            document.getElementById("result").innerHTML =
-                "❌ Энэ дугаарт бүртгэлтэй ачаа олдсонгүй.";
-            return;
+      }
+      $("searchBtn").disabled = true;
+      $("searchBtn").textContent = "Хайж байна…";
+      $("result").innerHTML = '<p class="help">Таны ачаануудыг шалгаж байна…</p>';
+      try {
+        const snapshot = await db.ref("cargo").orderByChild("phone").equalTo(phone).once("value");
+        const matches = [];
+        snapshot.forEach(child => matches.push(child.val()));
+        if (!matches.length) {
+          $("result").innerHTML = '<div class="result-card"><b>Ачаа олдсонгүй.</b><p class="help">Энэ утасны дугаарт бүртгэлтэй ачаа одоогоор алга байна. Утасны дугаараа зөв бичсэн эсэхээ шалгана уу.</p></div>';
+        } else {
+          matches.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+          $("result").innerHTML = `
+            <div class="result-card">
+              <b>✅ ${matches.length} ачаа олдлоо</b>
+              <p class="help">Таны утасны дугаарт бүртгэлтэй ачаанууд</p>
+            </div>` + matches.map((item, index) => `
+            <div class="result-success">
+              <h3>📦 Ачаа ${index + 1}</h3>
+              <div class="result-line"><span>Ирсэн огноо</span><strong>${safe(item.date || "—")}</strong></div>
+              <div class="result-line"><span>Track code</span><strong>${safe(item.track || "—")}</strong></div>
+              <div class="result-line"><span>Утас</span><strong>${safe(item.phone || "—")}</strong></div>
+              <div class="result-line"><span>Төлбөр</span><strong class="price-highlight">${money(item.price)}</strong></div>
+            </div>`).join("");
         }
-
-        for (let date in dataByDate) {
-
-            html += `<h3>📅 ${date}</h3>`;
-
-            dataByDate[date].forEach(item => {
-
-                html += `
-                <p>
-                📦 ${item.track}<br>
-                💰 ${Number(item.price).toLocaleString()}₮
-                </p>
-                <hr>
-                `;
-
-            });
-
-        }
-
-        html += `
-        <h3>📦 Нийт ачаа: ${totalCargo}</h3>
-        <h3>💰 Нийт төлбөр: ${totalPrice.toLocaleString()}₮</h3>
-        `;
-
-        document.getElementById("result").innerHTML = html;
-
+      } catch (error) {
+        $("result").innerHTML = '<p class="error">Хайлт хийхэд алдаа гарлаа. Түр хүлээгээд дахин оролдоно уу.</p>';
+        console.error(error);
+      } finally {
+        $("searchBtn").disabled = false;
+        $("searchBtn").textContent = "🔎 Миний ачааг хайх";
+      }
     });
-
-}
-
-</script>
-
-
+  </script>
 </body>
 </html>

@@ -1,200 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="mn">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Mira's Cargo Admin</title>
-
-<link rel="stylesheet" href="style.css">
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1457d9">
+  <title>Mira's Cargo — Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
-
 <body>
-
-<!-- LOGIN -->
-
-<div id="loginPage">
-
-    <h1>Mira's Cargo Admin</h1>
-
-    <div class="login-box">
-
-        <h2>🔐 Admin Login</h2>
-
-        <input
-            type="text"
-            id="username"
-            placeholder="Нэвтрэх нэр">
-
-        <input
-            type="password"
-            id="password"
-            placeholder="Нууц үг">
-
-        <button onclick="login()">
-            Нэвтрэх
-        </button>
-
-        <p id="loginError"></p>
-
-    </div>
-
-</div>
-
-
-<!-- ADMIN -->
-
-<div id="adminPage" style="display:none;">
-
-<header>
-
-    <h1>📦 Mira's Cargo Admin</h1>
-
-    <button onclick="logout()">
-        Гарах
-    </button>
-
-</header>
-
-
-<!-- ШИНЭ АЧАА -->
-
-<section class="card">
-
-<h2>📦 Шинэ ачаа нэмэх</h2>
-
-<input
-    type="date"
-    id="date">
-
-<input
-    type="text"
-    id="phone"
-    placeholder="Утасны дугаар">
-
-<input
-    type="text"
-    id="track"
-    placeholder="Track code">
-
-<input
-    type="number"
-    id="price"
-    placeholder="Үнэ">
-
-<button onclick="addCargo()">
-    ➕ Ачаа нэмэх
-</button>
-
-</section>
-
-
-<!-- BULK -->
-
-<section class="card">
-
-<h2>📋 Олон ачаа нэг дор оруулах</h2>
-
-<textarea
-    id="bulkData"
-    rows="12"
-    placeholder="94791721 123456789 2000
-94791721 234567890 3000
-94791721 345678901 5000"></textarea>
-
-<button onclick="previewBulk()">
-    👀 Урьдчилж харах
-</button>
-
-<button onclick="saveBulk()">
-    💾 Бүгдийг хадгалах
-</button>
-
-<div id="previewTable"></div>
-
-</section>
-
-
-<!-- TRACK ХАЙХ -->
-
-<section class="card">
-
-<h2>🔍 Track code хайх</h2>
-
-<input
-    type="text"
-    id="searchTrack"
-    placeholder="Track code">
-
-<button onclick="searchTrack()">
-    🔎 Хайх
-</button>
-
-<div id="searchResult"></div>
-
-</section>
-
-
-<!-- ТАЙЛАН -->
-
-<section class="card">
-
-<h2>📊 Нийт тайлан</h2>
-
-<p>
-📦 Нийт ачаа:
-<b id="totalCargo">0</b>
-</p>
-
-<p>
-💰 Нийт орлого:
-<b id="totalIncome">0₮</b>
-</p>
-
-</section>
-
-
-<!-- ХАДГАЛСАН АЧАА -->
-
-<section class="card">
-
-<h2>📂 Хадгалсан ачаанууд</h2>
-
-<div style="overflow-x:auto;">
-
-<table>
-
-<thead>
-
-<tr>
-<th>Огноо</th>
-<th>Утас</th>
-<th>Track</th>
-<th>Үнэ</th>
-<th>Үйлдэл</th>
-</tr>
-
-</thead>
-
-<tbody id="cargoTable"></tbody>
-
-</table>
-
-</div>
-
-</section>
-
-</div>
-
-
-<!-- SCRIPT -->
-
-<script src="script.js"></script>
-
+  <main class="app">
+    <section id="loginPage" class="login-wrap">
+      <div class="brand-mark">M</div>
+      <p class="eyebrow">MIRA'S CARGO</p>
+      <h1>Админ нэвтрэх</h1>
+      <p class="muted">Ачааны мэдээллээ удирдах хэсэг</p>
+      <form id="loginForm" class="panel login-panel">
+        <label for="email">Админы имэйл</label>
+        <input id="email" type="email" autocomplete="username" placeholder="admin@example.com" required>
+        <label for="password">Нууц үг</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="Нууц үг" required>
+        <button class="primary full" type="submit">Нэвтрэх</button>
+        <p id="loginError" class="error" role="alert"></p>
+      </form>
+      <p class="tiny muted">Зөвхөн эрхтэй админ нэвтэрнэ.</p>
+    </section>
+
+    <section id="adminPage" hidden>
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark small">M</div>
+          <div><strong>Mira's Cargo</strong><span>ADMIN PANEL</span></div>
+        </div>
+        <button id="logoutBtn" class="ghost" type="button">Гарах ↗</button>
+      </header>
+
+      <section class="welcome">
+        <div><p class="eyebrow">УДИРДЛАГЫН САМБАР</p><h1>Сайн байна уу? 👋</h1><p class="muted">Ачааны мэдээллээ эндээс удирдаарай.</p></div>
+      </section>
+
+      <section class="stats">
+        <article class="stat"><span>Нийт ачаа</span><strong id="totalCargo">0</strong><small>ширхэг</small></article>
+        <article class="stat"><span>Нийт үнэ</span><strong id="totalIncome">0₮</strong><small>бүртгэгдсэн дүн</small></article>
+      </section>
+
+      <nav class="tabs" aria-label="Удирдлагын цэс">
+        <button class="tab active" data-tab="addPanel" type="button">＋ Ачаа нэмэх</button>
+        <button class="tab" data-tab="searchPanel" type="button">⌕ Хайх</button>
+        <button class="tab" data-tab="listPanel" type="button">☷ Жагсаалт</button>
+      </nav>
+
+      <section id="addPanel" class="panel tab-panel">
+        <div class="section-heading"><div><p class="eyebrow">БҮРТГЭЛ</p><h2>Шинэ ачаа нэмэх</h2></div><span class="icon-chip">📦</span></div>
+        <form id="singleForm">
+          <label for="date">Ирсэн огноо</label><input id="date" type="date" required>
+          <div class="form-grid">
+            <div><label for="phone">Утасны дугаар</label><input id="phone" inputmode="tel" placeholder="Жишээ: 99112233" required></div>
+            <div><label for="track">Track code</label><input id="track" placeholder="Утас эсвэл Track code" required></div>
+          </div>
+          <label for="price">Төлбөр (₮)</label><input id="price" type="number" min="0" step="1" inputmode="numeric" placeholder="Жишээ: 5000" required>
+          <button class="primary full" type="submit">＋ Ачаа хадгалах</button>
+        </form>
+        <div class="divider"></div>
+        <div class="section-heading"><div><p class="eyebrow">ОЛНООР БҮРТГЭХ</p><h2>Олон ачаа нэг дор</h2></div></div>
+        <p class="help">Мөр бүрт: <b>Утас, Track code, Үнэ</b> гэж оруулна. Таслал, tab эсвэл зайгаар тусгаарлаж болно.</p>
+        <textarea id="bulkData" rows="5" placeholder="99112233, ABC123, 5000&#10;88112233, XYZ789, 8000"></textarea>
+        <div class="button-row">
+          <button id="previewBulkBtn" class="secondary" type="button">Урьдчилж харах</button>
+          <button id="saveBulkBtn" class="primary" type="button" disabled>Бүгдийг хадгалах</button>
+        </div>
+        <div id="previewTable" class="table-wrap"></div>
+      </section>
+
+      <section id="searchPanel" class="panel tab-panel" hidden>
+        <div class="section-heading"><div><p class="eyebrow">ХАЙЛТ</p><h2>Track code хайх</h2></div><span class="icon-chip">🔎</span></div>
+        <form id="searchForm" class="search-row">
+          <input id="searchTrack" placeholder="Track code оруулна уу" required>
+          <button class="primary" type="submit">Хайх</button>
+        </form>
+        <div id="searchResult" class="result-area"></div>
+      </section>
+
+      <section id="listPanel" class="panel tab-panel" hidden>
+        <div class="section-heading"><div><p class="eyebrow">БҮРТГЭЛИЙН САН</p><h2>Хадгалсан ачаанууд</h2></div></div>
+        <input id="filterInput" class="filter" placeholder="Утас эсвэл Track code-оор шүүх…">
+        <div class="table-wrap">
+          <table><thead><tr><th>Огноо</th><th>Утас</th><th>Track</th><th>Үнэ</th><th>Үйлдэл</th></tr></thead><tbody id="cargoTable"><tr><td colspan="5" class="empty">Мэдээлэл ачаалж байна…</td></tr></tbody></table>
+        </div>
+      </section>
+      <footer>© Mira's Cargo · Ховд аймаг, Булган сум</footer>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
 </body>
 </html>
