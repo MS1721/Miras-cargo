@@ -23,8 +23,8 @@ let bulkList = [];
 
 const $ = id => document.getElementById(id);
 const money = value => (Number(value) || 0).toLocaleString("mn-MN") + "₮";
-const normalizePhone = value => String(value || "").replace(/\\s+/g, "");
-const normalizeSearch = value => String(value || "").trim().toLowerCase().replace(/\\s+/g, "");
+const normalizePhone = value => String(value || "").replace(/\s+/g, "");
+const normalizeSearch = value => String(value || "").trim().toLowerCase().replace(/\s+/g, "");
 const makeSearchKey = (phone, track) => normalizeSearch(phone) + "|" + normalizeSearch(track);
 const safe = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
@@ -95,19 +95,65 @@ $("singleForm").addEventListener("submit", async event => {
 
 function parseBulk(text) {
   const valid = [], invalid = [];
-  text.split(/\r?\n/).forEach((line, index) => {
-    if (!line.trim()) return;
-    let parts;
-    if (line.includes("\t")) parts = line.split("\t").map(x => x.trim());
-    else if (line.includes(",")) parts = line.split(",").map(x => x.trim());
-    else parts = line.trim().split(/\s+/);
-    if (parts.length < 3) { invalid.push(index + 1); return; }
-    const phone = normalizePhone(parts[0]), track = parts[1];
-    const priceText = parts.slice(2).join("").replace(/[,\s₮]/g, "");
-    const price = Number(priceText);
-    if (!phone || !track || !Number.isFinite(price) || price < 0) { invalid.push(index + 1); return; }
-    valid.push({phone, track, price});
+  let currentPhone = "";
+  let currentDate = "";
+
+  const cleanDate = value => {
+    const s = String(value || "").trim();
+    const dotted = s.match(/^(\d{4})[./](\d{1,2})[./](\d{1,2})$/);
+    if (dotted) return `${dotted[1]}-${dotted[2].padStart(2,"0")}-${dotted[3].padStart(2,"0")}`;
+    return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : "";
+  };
+
+  text.split(/\r?\n/).forEach((rawLine, index) => {
+    const line = rawLine.trim();
+    if (!line) return;
+
+    // Ignore totals/footer lines such as "нийт-4ачаа" and "нийт үнэ-22900".
+    if (/^(нийт|niit|total)\b/i.test(line)) return;
+
+    const date = cleanDate(line);
+    if (date) {
+      currentDate = date;
+      return;
+    }
+
+    const phoneCandidate = line.replace(/^(утас|phone)\s*[:：-]\s*/i, "").replace(/\s+/g, "");
+    if (/^\+?\d{8,15}$/.test(phoneCandidate)) {
+      currentPhone = phoneCandidate.replace(/^\+/, "");
+      return;
+    }
+
+    // Existing format remains supported: phone, track, price (or tab-separated).
+    let parts = line.includes("\t") ? line.split("\t").map(x => x.trim())
+      : (line.includes(",") ? line.split(",").map(x => x.trim()) : null);
+
+    if (parts && parts.length >= 3) {
+      const phone = normalizePhone(parts[0]);
+      const track = parts[1];
+      const price = Number(parts.slice(2).join("").replace(/[,\s₮]/g, ""));
+      if (/^\+?\d{8,15}$/.test(phone) && track && Number.isFinite(price) && price >= 0) {
+        valid.push({phone: phone.replace(/^\+/, ""), track, price, date: currentDate});
+      } else {
+        invalid.push(index + 1);
+      }
+      return;
+    }
+
+    // Grouped format: TRACK-PRICE, using the last hyphen as the separator.
+    const match = line.match(/^(.*)\s*[-–—]\s*([\d,]+)\s*(?:₮)?$/);
+    if (match && currentPhone) {
+      const track = match[1].trim();
+      const price = Number(match[2].replace(/,/g, ""));
+      if (track && Number.isFinite(price) && price >= 0) {
+        valid.push({phone: currentPhone, track, price, date: currentDate});
+        return;
+      }
+    }
+
+    invalid.push(index + 1);
   });
+
   return {valid, invalid};
 }
 $("previewBulkBtn").addEventListener("click", () => {
@@ -119,9 +165,9 @@ $("previewBulkBtn").addEventListener("click", () => {
     return;
   }
   let html = `<p class="help">Зөв мөр: <b>${bulkList.length}</b> · Алдаатай мөр: <b>${parsed.invalid.length}</b></p>
-    <table><thead><tr><th>#</th><th>Утас</th><th>Track</th><th>Үнэ</th></tr></thead><tbody>`;
+    <table><thead><tr><th>#</th><th>Огноо</th><th>Утас</th><th>Track</th><th>Үнэ</th></tr></thead><tbody>`;
   bulkList.forEach((item, i) => {
-    html += `<tr><td>${i+1}</td><td>${safe(item.phone)}</td><td>${safe(item.track)}</td><td>${money(item.price)}</td></tr>`;
+    html += `<tr><td>${i+1}</td><td>${safe(item.date || $("date").value)}</td><td>${safe(item.phone)}</td><td>${safe(item.track)}</td><td>${money(item.price)}</td></tr>`;
   });
   html += "</tbody></table>";
   if (parsed.invalid.length) html += `<p class="error">Алдаатай мөрийн дугаар: ${parsed.invalid.join(", ")}</p>`;
@@ -135,7 +181,7 @@ $("saveBulkBtn").addEventListener("click", async () => {
   const updates = {};
   bulkList.forEach(item => {
     const key = db.ref("cargo").push().key;
-    updates["cargo/" + key] = {...item, date};
+    updates["cargo/" + key] = {...item, date: item.date || date};
   });
   try {
     await db.ref().update(updates);
@@ -199,7 +245,7 @@ async function editCargo(key) {
     toast("Оруулсан мэдээлэл буруу байна."); return;
   }
   try {
-    await db.ref("cargo/" + key).update({date:date.trim(), phone:phone.trim(), track:track.trim(), price});
+    await db.ref("cargo/" + key).update({date:date.trim(), phone:normalizePhone(phone), track:track.trim(), price});
     toast("Ачааны мэдээлэл шинэчлэгдлээ.");
   } catch (error) { toast("Засах алдаа: " + error.message); }
 }

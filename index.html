@@ -80,10 +80,14 @@
           $("result").innerHTML = '<div class="result-card"><b>Ачаа олдсонгүй.</b><p class="help">Энэ утасны дугаарт бүртгэлтэй ачаа одоогоор алга байна. Утасны дугаараа зөв бичсэн эсэхээ шалгана уу.</p></div>';
         } else {
           matches.sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+          const totalPrice = matches.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+          const latestDate = matches[0]?.date || "—";
           $("result").innerHTML = `
             <div class="result-card">
               <b>✅ ${matches.length} ачаа олдлоо</b>
-              <p class="help">Таны утасны дугаарт бүртгэлтэй ачаанууд</p>
+              <p class="help">Утас: ${safe(phone)} · Ирсэн огноо: ${safe(latestDate)}</p>
+              <div class="result-line"><span>Нийт ачаа</span><strong>${matches.length} ширхэг</strong></div>
+              <div class="result-line"><span>Нийт төлбөр</span><strong class="price-highlight">${money(totalPrice)}</strong></div>
             </div>` + matches.map((item, index) => `
             <div class="result-success">
               <h3>📦 Ачаа ${index + 1}</h3>
