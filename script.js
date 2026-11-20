@@ -259,20 +259,56 @@ async function deleteCargo(key) {
 
 $("searchForm").addEventListener("submit", async event => {
   event.preventDefault();
-  const term = $("searchTrack").value.trim();
+
+  const term = normalizePhone($("searchTrack").value);
   if (!term) return;
-  $("searchResult").innerHTML = '<p class="help">Хайж байна…</p>';
+
+  $("searchResult").innerHTML =
+    '<p class="help">Ачаа хайж байна...</p>';
+
   try {
-    const snapshot = await db.ref("cargo").orderByChild("track").equalTo(term).once("value");
+    const snapshot = await db.ref("cargo")
+      .orderByChild("phone")
+      .equalTo(term)
+      .once("value");
+
     const found = [];
     snapshot.forEach(child => found.push(child.val()));
-    $("searchResult").innerHTML = found.length ? found.map(item => `
-      <article class="result-card"><b>📦 Ачааны мэдээлэл</b>
-      <p><b>Огноо:</b> ${safe(item.date || "")}</p>
-      <p><b>Утас:</b> ${safe(item.phone || "")}</p>
-      <p><b>Track:</b> ${safe(item.track || "")}</p>
-      <p><b>Үнэ:</b> ${money(item.price)}</p></article>`).join("") : '<p class="help">Ийм Track code олдсонгүй.</p>';
-  } catch (error) { $("searchResult").textContent = "Хайлт хийхэд алдаа: " + error.message; }
+
+    if (found.length === 0) {
+      $("searchResult").innerHTML =
+        '<p class="help">Энэ утсанд бүртгэлтэй ачаа олдсонгүй.</p>';
+      return;
+    }
+
+    const totalPrice = found.reduce(
+      (sum, item) => sum + Number(item.price || 0), 0
+    );
+
+    $("searchResult").innerHTML = `
+      <article class="result-card">
+        <h2>✅ ${found.length} ачаа олдлоо</h2>
+        <p>Таны утасны дугаар: ${safe(term)}</p>
+        <hr>
+        ${found.map((item, index) => `
+          <article class="result-card">
+            <h3>📦 Ачаа ${index + 1}</h3>
+            <p><b>Огноо:</b> ${safe(item.date || "")}</p>
+            <p><b>Утас:</b> ${safe(item.phone || "")}</p>
+            <p><b>Track:</b> ${safe(item.track || "")}</p>
+            <p><b>Үнэ:</b> ${money(item.price)}</p>
+          </article>
+        `).join("")}
+        <hr>
+        <h3>Нийт ачаа: ${found.length}</h3>
+        <h2>Нийт үнэ: ${money(totalPrice)}</h2>
+      </article>
+    `;
+
+  } catch (error) {
+    $("searchResult").textContent =
+      "Хайлт хийхэд алдаа: " + error.message;
+  }
 });
 
 $("date").value = new Date().toLocaleDateString("en-CA");
